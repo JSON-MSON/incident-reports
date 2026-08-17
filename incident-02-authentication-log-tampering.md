@@ -101,6 +101,8 @@ This section documents the real, multi-layered process required to get File Inte
 
 ## Appendix: Raw Evidence
 
-- `screenshots/incident-02/fim-alert-rule-550-summary.png` — Full FIM alert record: timestamp, rule ID/description/level, MITRE mapping, and the `full_log` field showing size/hash changes
-- `screenshots/incident-02/fim-alert-rule-550-mitre-mapping.png` — Rule 550's MITRE/compliance tags and the `syscheck.changed_attributes` field
-- `screenshots/incident-02/fim-alert-rule-550-diff.png` — The `syscheck.diff` field, showing the actual destroyed log content recovered from the alert itself
+![Full FIM alert record: timestamp, rule ID/description/level, MITRE mapping, and the full_log field showing size/hash changes](screenshots/incident-02/fim-alert-rule-550-summary.png)
+
+![Rule 550's MITRE/compliance tags and the syscheck.changed_attributes field](screenshots/incident-02/fim-alert-rule-550-mitre-mapping.png)
+
+![The syscheck.diff field, showing the actual destroyed log content recovered from the alert itself](screenshots/incident-02/fim-alert-rule-550-diff.png)
