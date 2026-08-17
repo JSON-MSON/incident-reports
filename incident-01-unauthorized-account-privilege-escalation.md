@@ -99,6 +99,6 @@ The report deliberately does not force a conclusion between these; a real Tier 2
 
 ![Security log filtered for Event ID 4732, showing both group-membership events (11:38:06 AM and 11:38:12 AM) at the top of the list](screenshots/incident-01/event-4732-list.png)
 
-![Event 4732 full detail view (Administrators group addition)](screenshots/incident-01/event-4732-group-membership-added.png)
-
 ![Event 4732 full detail view (Users group addition, automatic on account creation)](screenshots/incident-01/event-4732-users-group-added.png)
+
+![Event 4732 full detail view (Administrators group addition)](screenshots/incident-01/event-4732-group-membership-added.png)
