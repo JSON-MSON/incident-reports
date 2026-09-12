@@ -1,8 +1,8 @@
-# Incident Report: Authentication Log Tampering (Indicator Removal)
+# Incident Report: Authentication Log Tampering
 
 **Report ID:** INC-2026-08-13-01
 **Classification:** Internal — Lab Exercise
-**Framework:** NIST SP 800-61 (Computer Security Incident Handling Guide)
+**Framework:** NIST SP 800-61 Rev 2, *Computer Security Incident Handling Guide* — withdrawn April 3, 2025 and superseded by [Rev 3](https://doi.org/10.6028/NIST.SP.800-61r3); cited here as the historical basis for this report's structure. See [`CSF_MAPPING.md`](CSF_MAPPING.md) for this report mapped to CSF 2.0.
 **Severity:** High
 **Status:** Escalated — Pending L2 Investigation
 
@@ -18,7 +18,7 @@ All times local (EDT), sourced directly from the Wazuh FIM alert and the host's 
 
 | Time | Event | Source |
 |---|---|---|
-| 16:30:08 | Last known-good state of `auth.log` (26,881 bytes) | FIM baseline, prior scheduled scan |
+| 16:30:08 | Last known-good state of `auth.log` (26,881 bytes) | FIM alert, previous recorded modification time |
 | 16:34:39 | `auth.log` truncated to 106 bytes via `sudo truncate -s 0` | Filesystem mtime, confirmed via `ls -la` |
 | 16:35:14 | FIM scheduled scan detects the change; rule 550 alert generated | Wazuh alert, rule.id 550 |
 
@@ -39,14 +39,16 @@ The 35-second gap between the tampering action and detection reflects a delibera
 
 The residual content is a genuinely interesting indicator in its own right: even a maximally minimal anti-forensic action (`truncate -s 0`) could not produce a perfectly empty file, because escalating via `sudo` to perform the truncation itself generated a PAM session-close event that was written into the file being cleared — a real, self-defeating property of this specific technique that a less minimal cleanup pass (e.g. deleting and recreating the file entirely) might not exhibit.
 
+![Full FIM alert record — source for every value in the table above: the size change, all six hashes, the detection timestamp, and the previous recorded modification time](screenshots/incident-02/fim-alert-rule-550-summary.png)
+
 ## 4. MITRE ATT&CK Mapping
 
 | Technique | ID | Tactic | Source |
 |---|---|---|---|
-| Indicator Removal: Clear Linux or Mac System Logs | T1685.006 (reissued from T1070.002 under ATT&CK v19) | Defense Impairment | Scenario intent |
+| Disable or Modify Tools: Clear Linux or Mac System Logs | T1685.006 (reissued from T1070.002 under ATT&CK v19) | Defense Impairment | Scenario intent |
 | Stored Data Manipulation | T1565.001 | Impact | Wazuh's automatic rule 550 tag |
 
-These two mappings genuinely differ, and that gap is itself worth documenting rather than silently reconciling. Wazuh's rule 550 is a generic, content-agnostic integrity-change rule — it fires identically whether a file was tampered with to destroy evidence, corrupted by an application bug, or edited for a legitimate reason, and its default MITRE tag (T1565.001) reflects only "something in a tracked file changed," not attacker intent. Determining that this specific change is actually an Indicator Removal action requires an analyst applying context (which file, what changed, who ran the command) — a real, general limitation of generic FIM alerting that a Tier 1 analyst needs to know rather than assume the tool's auto-tag is authoritative.
+These two mappings genuinely differ, and that gap is itself worth documenting rather than silently reconciling. Wazuh's rule 550 is a generic, content-agnostic integrity-change rule — it fires identically whether a file was tampered with to destroy evidence, corrupted by an application bug, or edited for a legitimate reason, and its default MITRE tag (T1565.001) reflects only "something in a tracked file changed," not attacker intent. Determining that this specific change is actually deliberate log clearing requires an analyst applying context (which file, what changed, who ran the command) — a real, general limitation of generic FIM alerting that a Tier 1 analyst needs to know rather than assume the tool's auto-tag is authoritative.
 
 ## 5. Triage & Severity Assessment
 
@@ -55,9 +57,9 @@ These two mappings genuinely differ, and that gap is itself worth documenting ra
 **Initial (Tier 1) validation performed before escalation:**
 - Confirmed the size and hash changes via the FIM alert's own before/after fields, not assumed from the alert firing alone.
 - Reviewed the alert's `syscheck.diff` field directly to confirm exactly what content was destroyed, rather than treating the alert as a bare notification.
-- Confirmed no other files changed in the same scan window, narrowing the action to this single, deliberate target.
+- Confirmed no other monitored file changed that day — all fifteen integrity-change alerts recorded on August 13 name `/var/log/auth.log` and no other path — narrowing the action to this single, deliberate target.
 
-**Why this was not closed at Tier 1:** the target file and technique are specific enough to rule out routine administrative log rotation (which would not produce a near-zero-byte file via `truncate`, and Wazuh's own logrotate-aware baseline showed no scheduled rotation event at this time). Tier 1 confirmed the *what*; determining *why* — what the operator was concealing — is outside Tier 1's scope.
+**Why this was not closed at Tier 1:** the target file and technique are specific enough to rule out routine administrative log rotation, which does not truncate a file in place to near-zero bytes. Tier 1 confirmed the *what*; determining *why* — what the operator was concealing — is outside Tier 1's scope.
 
 ## 6. Escalation Decision
 
@@ -66,6 +68,8 @@ These two mappings genuinely differ, and that gap is itself worth documenting ra
 ## 7. Containment & Remediation Actions
 
 This incident's containment differs meaningfully from a typical case: the "evidence" the operator attempted to destroy was independently preserved by the very detection layer they were trying to evade. The FIM alert's `syscheck.diff` field contains the complete pre-truncation content of `auth.log` — 61 lines, including the operator's own session activity — meaning the tampering attempt did not actually succeed in permanently erasing the record, only the live on-disk copy.
+
+![The alert's `syscheck.diff` field, showing the destroyed log content recovered from the alert itself](screenshots/incident-02/fim-alert-rule-550-diff.png)
 
 **Actions taken:**
 - No file restoration was attempted on the live system — the on-disk file cannot be restored to its exact prior byte-for-byte state, and the SIEM-preserved diff already serves as the authoritative record for investigation purposes.
@@ -81,8 +85,8 @@ This incident's containment differs meaningfully from a typical case: the "evide
 ## 9. Lessons Learned / Recommendations
 
 - **A detection rule that's configured and a detection rule that actually alerts are two different things** — the same core lesson from this lab's very first detection rule (T1110), rediscovered here in a new form. Simply adding `auth.log` to FIM's watched paths was not sufficient on its own; getting a genuine, dashboard-visible alert required working through two distinct, real Wazuh behaviors (documented fully in Section 10) that would have silently defeated detection if left unaddressed.
-- **Restart-triggered FIM scans do not generate alerts, even when they detect real changes.** This is a confirmed, currently open Wazuh bug (GitHub issue #32426) — an operational team relying on a manager restart to force detection would get a false sense of security from a silently-updated baseline instead of a real alert.
-- **A generic FIM rule's automatic MITRE tag should not be trusted as the final word on attacker technique.** Rule 550 tags every integrity change identically (T1565.001); recognizing this specific instance as Indicator Removal (T1685.006) required analyst judgment about which file changed and why, not just the tool's own label.
+- **Restart-triggered FIM scans do not generate alerts, even when they detect real changes.** This is a confirmed Wazuh bug ([issue #32426](https://github.com/wazuh/wazuh/issues/32426), filed October 2025 against 4.13.1, open at the time of this exercise and since closed) — an operational team relying on a manager restart to force detection would get a false sense of security from a silently-updated baseline instead of a real alert.
+- **A generic FIM rule's automatic MITRE tag should not be trusted as the final word on attacker technique.** Rule 550 tags every integrity change identically (T1565.001); recognizing this specific instance as log clearing (T1685.006) required analyst judgment about which file changed and why, not just the tool's own label.
 - **Centralizing high-value forensic logs off-host remains the more durable fix.** Local FIM caught this specific tampering attempt, but only after the fact — the live file was still genuinely destroyed on disk. Remote log forwarding would prevent the underlying loss, not just detect it after it happens.
 
 ## 10. Detection Engineering Notes: Building and Validating FIM Coverage
@@ -93,16 +97,18 @@ This section documents the real, multi-layered process required to get File Inte
 
 **2. A global ignore rule was silently filtering it out.** Wazuh's default configuration includes `<ignore type="sregex">.log$|.swp$</ignore>` — a rule that applies globally across every monitored directory, with no way to scope an exception to one specific path (a confirmed, documented Wazuh limitation, not a misconfiguration). Since `auth.log` matches `.log$`, it was being silently excluded from tracking even while explicitly listed in `<directories>`. Confirmed empty of any other `.log` files across the watched directories first, then removed the `.log$` portion of the ignore pattern specifically, preserving the unrelated `.swp$` exclusion.
 
-**3. Restart-triggered scans update the FIM database but never generate an alert.** This was the most consequential finding. Forcing detection via `systemctl restart wazuh-manager` — the approach used throughout most of this session's troubleshooting — repeatedly and silently re-baselined the file's hash against its current state instead of comparing it to the prior baseline and alerting on the difference. This is a confirmed, currently open upstream bug (Wazuh GitHub issue #32426, filed October 2025), reproduced consistently here across multiple attempts. The fix was switching to a genuinely scheduled scan (temporarily lowering `<frequency>` from the 12-hour default to 60 seconds for this exercise) rather than relying on any restart to trigger detection.
+**3. Restart-triggered scans update the FIM database but never generate an alert.** This was the most consequential finding. Forcing detection via `systemctl restart wazuh-manager` — the approach used throughout most of this session's troubleshooting — re-baselined the file's hash against its current state instead of comparing it to the prior baseline and alerting on the difference. This behaviour is documented upstream in [Wazuh issue #32426](https://github.com/wazuh/wazuh/issues/32426), filed October 2025 against 4.13.1 and since closed. The exact sequence of attempts made here is not reconstructable from surviving evidence — the manager log no longer covers this date, and `ossec.conf`'s timestamp postdates the exercise — so this report claims only what the upstream issue documents and what the working configuration shows. The fix was switching to a genuinely scheduled scan (temporarily lowering `<frequency>` from the 12-hour default to 60 seconds for this exercise) rather than relying on any restart to trigger detection.
 
 **4. A `realtime` + `restrict` alternative was attempted and abandoned.** Since `realtime` monitoring only applies to directories, not individual files, an attempt was made to watch `/var/log` in realtime while scoping actual tracking down to `auth.log` via the `restrict` attribute. This configuration was accepted without any parsing error, and syscheckd confirmed it was watching the path — but a change made after this config took effect was never picked up by a subsequent query of the FIM database at all. Given time already invested and a working alternative in hand, this path was abandoned in favor of the scheduled-scan approach rather than further diagnosed — a deliberate scoping decision, not a claim that the realtime approach cannot work.
 
 **5. A validation check nearly reached a false conclusion, caught by looking one step further.** After enabling full debug logging (`analysisd.debug=2`, `syscheck.debug=2`) and tracing a test change all the way through syscheckd's log — confirming it sent a complete, correctly-formed FIM event — analysisd's own debug output showed no trace of processing that event at all for a full 61-second window, appearing to confirm a silently broken alert pipeline. Before finalizing that conclusion, a completely fresh, clean repeat of the actual incident action was performed as a final check — and it produced a real, complete rule 550 alert, fully visible on the dashboard, including the alert's own diff of the destroyed content. The likely explanation: normal indexer/Filebeat catch-up lag following several manager restarts earlier in the session, not a genuinely broken pipeline. The lesson carried into this report's own methodology: a negative result from limited-duration debug tracing is not the same as a proven absence, and re-testing cleanly before committing to a conclusion is worth the extra time.
 
-## Appendix: Raw Evidence
+## Appendix: Evidence Index
 
-![Full FIM alert record: timestamp, rule ID/description/level, MITRE mapping, and the full_log field showing size/hash changes](screenshots/incident-02/fim-alert-rule-550-summary.png)
+The two captures that source this report's central claims appear inline in Sections 3 and 7. All three are listed here:
 
-![Rule 550's MITRE/compliance tags and the syscheck.changed_attributes field](screenshots/incident-02/fim-alert-rule-550-mitre-mapping.png)
-
-![The syscheck.diff field, showing the actual destroyed log content recovered from the alert itself](screenshots/incident-02/fim-alert-rule-550-diff.png)
+| File | Shows |
+|---|---|
+| [`fim-alert-rule-550-summary.png`](screenshots/incident-02/fim-alert-rule-550-summary.png) | Full alert record — timestamp, rule ID, level, and the `full_log` field with size and hash changes *(shown inline in Section 3)* |
+| [`fim-alert-rule-550-mitre-mapping.png`](screenshots/incident-02/fim-alert-rule-550-mitre-mapping.png) | Rule 550's automatic MITRE tag (T1565.001) and compliance mappings, alongside `syscheck.changed_attributes` — the basis for Section 4's note on generic auto-tagging |
+| [`fim-alert-rule-550-diff.png`](screenshots/incident-02/fim-alert-rule-550-diff.png) | The `syscheck.diff` field containing the destroyed log content *(shown inline in Section 7)* |
