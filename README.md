@@ -24,7 +24,7 @@ Both incidents were staged deliberately against this lab's own infrastructure, a
 
 Three things these two investigations established.
 
-**An attempt to destroy evidence can be defeated by the layer that detects it.** The operator in incident-02 truncated the authentication log to near-zero bytes. The File Integrity Monitoring alert had already captured the file's complete prior content in its diff field, so the live copy was destroyed while the record survived — and the alert itself became the authoritative source for what was erased.
+**An attempt to destroy evidence can be defeated by the layer that detects it.** The operator in incident-02 truncated the authentication log to near-zero bytes. The File Integrity Monitoring alert had already captured the destroyed content in its diff field — substantial but truncated by Wazuh's own size limit — so the live copy was destroyed while the record largely survived, and the alert became the authoritative source for both the scale of the loss and what was erased.
 
 **Attribution to a legitimate account is not confirmation of legitimate intent.** Incident-01's account creation and privilege escalation trace to a known local administrator. A compromised administrator session produces identical evidence, and that ambiguity is precisely why the incident escalates rather than closing at Tier 1.
 

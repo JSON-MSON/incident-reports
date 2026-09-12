@@ -67,7 +67,7 @@ These two mappings genuinely differ, and that gap is itself worth documenting ra
 
 ## 7. Containment & Remediation Actions
 
-This incident's containment differs meaningfully from a typical case: the "evidence" the operator attempted to destroy was independently preserved by the very detection layer they were trying to evade. The FIM alert's `syscheck.diff` field contains the complete pre-truncation content of `auth.log` — 61 lines, including the operator's own session activity — meaning the tampering attempt did not actually succeed in permanently erasing the record, only the live on-disk copy.
+This incident's containment differs meaningfully from a typical case: the "evidence" the operator attempted to destroy was independently preserved by the very detection layer they were trying to evade. The FIM alert's `syscheck.diff` field contains the destroyed content of `auth.log` — the diff header records 61 lines replaced by one, and the preserved text includes the operator's own session activity. Wazuh truncates this field beyond a size limit, so the record is substantial rather than complete: 27,122 characters against a 26,881-byte original, ending in a truncation marker. What it establishes unambiguously is the scale of what was destroyed and the fact that the live on-disk copy was not the only copy.
 
 ![The alert's `syscheck.diff` field, showing the destroyed log content recovered from the alert itself](screenshots/incident-02/fim-alert-rule-550-diff.png)
 
