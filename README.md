@@ -36,6 +36,13 @@ Both incidents share a deliberate throughline: each one is scoped around a speci
 
 Neither report inflates its findings or forces a tidy conclusion where the evidence doesn't support one. Where root cause is genuinely unresolved, or deliberately out of scope, the report says so directly.
 
+## What I'd do differently in production
+
+- **Hold containment until Tier 2 authorizes it.** incident-01 executed removal immediately; in a live environment the account and its activity would be preserved for forensic review first, since deleting it destroys evidence the next tier needs.
+- **Capture containment verification as evidence, not just as an action.** The follow-up confirmation in incident-01 was run but not preserved, so removal is asserted rather than demonstrated. The evidence standard applied to detecting an incident should apply equally to proving it was contained.
+- **Forward high-value forensic logs off-host in near-real-time.** File integrity monitoring caught the tampering in incident-02 only after the fact, and the alert's own diff field is truncated beyond a size limit. An append-only remote collector prevents the loss rather than recording it.
+- **Alert on the account-creation pattern rather than finding it retrospectively.** Both events in incident-01 surfaced through manual log review. A correlation rule on Event ID 4720 followed by 4732 for the same target account, within a short window, would surface this automatically.
+
 ## Repository structure
 
 - `incident-01-unauthorized-account-privilege-escalation.md` / `incident-02-authentication-log-tampering.md` — full reports
