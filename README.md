@@ -2,7 +2,7 @@
 
 ## What this demonstrates
 
-Formal incident response documentation — a distinct SOC skill from the build-and-detect work in this portfolio's other five projects. Each report here follows the four-phase structure of NIST SP 800-61 Rev 2, *Computer Security Incident Handling Guide*: a timeline built from real evidence, indicators of compromise, MITRE ATT&CK mapping, a severity and escalation decision with stated reasoning, containment and remediation actions, and root cause analysis — including being explicit about what the available evidence does and doesn't support, rather than forcing a conclusion the evidence doesn't back.
+Formal incident response documentation — a distinct SOC skill from the build-and-detect work in this portfolio's lab projects. Each report here follows the four-phase structure of NIST SP 800-61 Rev 2, *Computer Security Incident Handling Guide*: a timeline built from real evidence, indicators of compromise, MITRE ATT&CK mapping, a severity and escalation decision with stated reasoning, containment and remediation actions, and root cause analysis — including being explicit about what the available evidence does and doesn't support, rather than forcing a conclusion the evidence doesn't back.
 
 That publication is withdrawn. NIST retired Rev 2 on April 3, 2025 and superseded it with [Rev 3](https://doi.org/10.6028/NIST.SP.800-61r3), which drops the four-phase lifecycle and organizes incident response around the six CSF 2.0 Functions instead. The reports are kept in their original structure, and [`CSF_MAPPING.md`](CSF_MAPPING.md) maps every report section to the specific CSF 2.0 Subcategories describing its outcome — including an honest account of which Functions this repo covers thinly.
 
