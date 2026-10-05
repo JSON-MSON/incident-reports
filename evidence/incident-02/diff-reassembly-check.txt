@@ -1,0 +1,57 @@
+Incident alert diff (2026-08-13T20:35:14): structure and reassembly check
+Run September 30, 2026 on ubuntu-target, read-only, against the manager's archived alert file;
+pasted at the time. The prompt's account name is replaced. Cited by incident-02
+Sections 5 and 6.
+The diff's lines are not published in full (truncation-and-residual-line.txt shows its last
+four old lines and its new line): with the before-hash public, the full set, even redacted,
+could be used to recover the redacted account name. Structure and hashes only.
+
+== Part 1: structure ==
+64 lines: the header "1,61c1", 61 old lines ("< "), the separator and one new line. The 61
+old lines total 26,881 bytes, the file's size before truncation. Each "line N" row is a diff
+line containing "[...]", with its last 120 characters; Part 2's hash match shows the marker
+is part of the logged sudo command lines themselves, not a cut in the diff.
+
+labadmin@ubuntu-target:~$ sudo grep '"timestamp":"2026-08-13T20:35:14' /var/ossec/logs/alerts/2026/Aug/ossec-alerts-13.json | python3 -c '
+import sys, json
+a = json.loads(sys.stdin.readline()); d = a["syscheck"]["diff"]; L = d.splitlines()
+old = [x[2:] for x in L if x.startswith("< ")]
+print("diff bytes", len(d.encode()), "lines", len(L), "old lines", len(old), "old bytes incl newlines", sum(len(x.encode()) + 1 for x in old))
+print("header", L[0], "| separator", L[-2])
+for i, x in enumerate(L):
+    if "[...]" in x: print("line", i, "len", len(x), "tail", repr(x[-120:]))
+' | tee ~/rule550-2026-08-13-incident-diff.txt
+diff bytes 27122 lines 64 old lines 61 old bytes incl newlines 26881
+header 1,61c1 | separator ---
+line 14 len 925 tail '20/out_inNsDefault_c14nPrefix.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/c14nTrim.xml [...]'
+line 15 len 998 tail '14nPrefixQname.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inC14N1_c14nDefault.xml [...]'
+line 16 len 1013 tail 'a/c14n-20/inC14N6.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inC14N2_c14nTrim.xml [...]'
+line 17 len 976 tail '-20/c14nDefault.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inNsXml_c14nPrefix.xml [...]'
+line 18 len 966 tail '14n-20/out_inC14N2_c14nDefault.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/inC14N5.xml [...]'
+line 19 len 1020 tail 'server_rules.xml /var/ossec/ruleset/rules/0030-postfix_rules.xml /var/ossec/ruleset/rules/0180-pure-ftpd_rules.xml [...]'
+line 20 len 979 tail 'ms_ftpd_rules.xml /var/ossec/ruleset/rules/0860-sysmon_id_13.xml /var/ossec/ruleset/rules/0017-wazuh-api_rules.xml [...]'
+line 21 len 1006 tail 'es/0810-sysmon_id_3.xml /var/ossec/ruleset/rules/0375-usb_rules.xml /var/ossec/ruleset/rules/0010-rules_config.xml [...]'
+line 22 len 993 tail '00-paloalto_rules.xml /var/ossec/ruleset/rules/0135-hordeimp_rules.xml /var/ossec/ruleset/rules/0265-php_rules.xml [...]'
+line 23 len 1017 tail '.xml /var/ossec/ruleset/rules/0990-amazon-security-lake_rules.xml /var/ossec/ruleset/rules/0105-asterisk_rules.xml [...]'
+line 24 len 998 tail 'xim_rules.xml /var/ossec/ruleset/rules/0640-junos_rules.xml /var/ossec/ruleset/rules/0445-identity_guard_rules.xml [...]'
+line 25 len 1014 tail 'ap_rules.xml /var/ossec/ruleset/rules/0410-imperva_rules.xml /var/ossec/ruleset/rules/0600-win-wdefender_rules.xml [...]'
+line 26 len 1014 tail 'ersky_rules.xml /var/ossec/ruleset/rules/0045-mailscanner_rules.xml /var/ossec/ruleset/rules/0185-vsftpd_rules.xml [...]'
+line 27 len 985 tail 'tiauth_rules.xml /var/ossec/ruleset/rules/0270-web_appsec_rules.xml /var/ossec/ruleset/rules/0415-sophos_rules.xml [...]'
+line 28 len 1003 tail 'ecoders.xml /var/ossec/ruleset/decoders/0125-hp_decoders.xml /var/ossec/ruleset/decoders/0105-freeipa_decoders.xml [...]'
+line 29 len 981 tail 'ers.xml /var/ossec/ruleset/decoders/0075-clamav_decoders.xml /var/ossec/ruleset/decoders/0180-openbsd_decoders.xml [...]'
+line 30 len 975 tail 'ders.xml /var/ossec/ruleset/decoders/0560-oracledb_decoders.xml /var/ossec/ruleset/decoders/0390-zeus_decoders.xml [...]'
+line 31 len 978 tail 'c/ruleset/decoders/0400-identity_guard_decoders.xml /var/ossec/ruleset/decoders/0260-rsa-auth-manager_decoders.xml [...]'
+line 32 len 985 tail 'coders.xml /var/ossec/ruleset/decoders/0270-samba_decoders.xml /var/ossec/ruleset/decoders/0465-azure_decoders.xml [...]'
+line 33 len 997 tail 'coders.xml /var/ossec/ruleset/decoders/0235-puppet_decoders.xml /var/ossec/ruleset/decoders/0110-ftpd_decoders.xml [...]'
+line 34 len 992 tail '.xml /var/ossec/ruleset/decoders/0340-trend-osce_decoders.xml /var/ossec/ruleset/decoders/0540-gitlab_decoders.xml [...]'
+line 35 len 803 tail 'eset/decoders/0395-sqlserver_decoders.xml /var/ossec/etc/rules/local_rules.xml /var/ossec/etc/decoders/local_decoder.xml'
+
+== Part 2: reassembly ==
+The 61 old lines, "< " removed, joined with newlines plus a final newline and hashed with
+SHA-256, compared with the before-hash recorded in the alert (published in incident-02).
+Output as pasted; the command line was not saved with it.
+
+reassembled bytes 26881 lines 61
+sha256 13edec665be4eaedf2c04ff466822aef912d3750d0a9dd16194c2f3a3a344dab
+before-hash 13edec665be4eaedf2c04ff466822aef912d3750d0a9dd16194c2f3a3a344dab
+MATCH

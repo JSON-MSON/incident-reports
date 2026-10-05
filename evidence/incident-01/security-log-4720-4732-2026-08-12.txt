@@ -1,0 +1,227 @@
+Security log records: svc_update created and added to Users and Administrators, August 12, 2026
+Host: DESKTOP-QLHBOB7, the domain-joined Windows 10 Pro client. Identifying values are replaced:
+the local administrator account (winadmin) and the machine SID's domain part (the
+RIDs -1001, -1005 and -1006 are kept). Cited by incident-01 Sections 2 and 3.
+
+== Part 1: Get-WinEvent output, as captured on the client ==
+Every 4720 (user account created) and 4732 (member added to a security-enabled local group)
+record of August 12. Times are as the client displayed them (UTC-7). The date the command was
+run is not recorded with its output, and its line wrapping is as captured. The first three
+records (7:49:56 AM, new account RID 1005) are the earlier test account of the same name noted
+in incident-01; the incident's three records follow (11:38:06 AM and 11:38:12 AM, RID 1006).
+
+PS C:\Users\winadmin> Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4720,4732; StartTime='2026-08-12T00:00:0
+0'; EndTime='2026-08-13T00:00:00'} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Id, Message | Sort-Obje
+ct TimeCreated | Format-List
+
+
+TimeCreated : 8/12/2026 7:49:56 AM
+Id          : 4720
+Message     : A user account was created.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x16FA74
+
+              New Account:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1005
+                Account Name:           svc_update
+                Account Domain:         DESKTOP-QLHBOB7
+
+              Attributes:
+                SAM Account Name:       svc_update
+                Display Name:           <value not set>
+                User Principal Name:    -
+                Home Directory:         <value not set>
+                Home Drive:             <value not set>
+                Script Path:            <value not set>
+                Profile Path:           <value not set>
+                User Workstations:      <value not set>
+                Password Last Set:      <never>
+                Account Expires:                <never>
+                Primary Group ID:       513
+                Allowed To Delegate To: -
+                Old UAC Value:          0x0
+                New UAC Value:          0x15
+                User Account Control:
+                        Account Disabled
+                        'Password Not Required' - Enabled
+                        'Normal Account' - Enabled
+                User Parameters:        <value not set>
+                SID History:            -
+                Logon Hours:            All
+
+              Additional Information:
+                Privileges              -
+
+TimeCreated : 8/12/2026 7:49:56 AM
+Id          : 4732
+Message     : A member was added to a security-enabled local group.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x16FA74
+
+              Member:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1005
+                Account Name:           -
+
+              Group:
+                Security ID:            S-1-5-32-545
+                Group Name:             Users
+                Group Domain:           Builtin
+
+              Additional Information:
+                Privileges:             -
+
+TimeCreated : 8/12/2026 7:49:56 AM
+Id          : 4732
+Message     : A member was added to a security-enabled local group.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x16FA74
+
+              Member:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1005
+                Account Name:           -
+
+              Group:
+                Security ID:            S-1-5-32-544
+                Group Name:             Administrators
+                Group Domain:           Builtin
+
+              Additional Information:
+                Privileges:             -
+
+TimeCreated : 8/12/2026 11:38:06 AM
+Id          : 4720
+Message     : A user account was created.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x6B798A
+
+              New Account:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1006
+                Account Name:           svc_update
+                Account Domain:         DESKTOP-QLHBOB7
+
+              Attributes:
+                SAM Account Name:       svc_update
+                Display Name:           <value not set>
+                User Principal Name:    -
+                Home Directory:         <value not set>
+                Home Drive:             <value not set>
+                Script Path:            <value not set>
+                Profile Path:           <value not set>
+                User Workstations:      <value not set>
+                Password Last Set:      <never>
+                Account Expires:                <never>
+                Primary Group ID:       513
+                Allowed To Delegate To: -
+                Old UAC Value:          0x0
+                New UAC Value:          0x15
+                User Account Control:
+                        Account Disabled
+                        'Password Not Required' - Enabled
+                        'Normal Account' - Enabled
+                User Parameters:        <value not set>
+                SID History:            -
+                Logon Hours:            All
+
+              Additional Information:
+                Privileges              -
+
+TimeCreated : 8/12/2026 11:38:06 AM
+Id          : 4732
+Message     : A member was added to a security-enabled local group.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x6B798A
+
+              Member:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1006
+                Account Name:           -
+
+              Group:
+                Security ID:            S-1-5-32-545
+                Group Name:             Users
+                Group Domain:           Builtin
+
+              Additional Information:
+                Privileges:             -
+
+TimeCreated : 8/12/2026 11:38:12 AM
+Id          : 4732
+Message     : A member was added to a security-enabled local group.
+
+              Subject:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1001
+                Account Name:           winadmin
+                Account Domain:         DESKTOP-QLHBOB7
+                Logon ID:               0x6B798A
+
+              Member:
+                Security ID:            S-1-5-21-2000000001-2000000002-2000000003-1006
+                Account Name:           -
+
+              Group:
+                Security ID:            S-1-5-32-544
+                Group Name:             Administrators
+                Group Domain:           Builtin
+
+              Additional Information:
+                Privileges:             -
+
+== Part 2: the incident's three records, parsed from the Security log ==
+Source: a copy of the client's Security log taken on October 1, 2026 (the log file itself is
+not published), parsed October 2, 2026 with python-evtx 0.8.1 and the script below.
+TimeCreated is printed from the raw FILETIME value (100-nanosecond intervals since 1601-01-01
+UTC) with all seven fractional digits; python-evtx's own printed time stops at microseconds
+and, for these records, differs from the raw value by up to 2 microseconds. Values are replaced
+as in Part 1.
+
+$ shasum -a 256 Security-2026-10-01.evtx
+5fbc2617e20ed77f80b9b0e64c180234ab1bd2bc7208978fa8dbdbd068537d9e  Security-2026-10-01.evtx
+
+$ cat parse_security_records.py
+import sys, datetime, xml.etree.ElementTree as ET
+import Evtx.Evtx as evtx, Evtx.Nodes as N
+NS = '{http://schemas.microsoft.com/win/2004/08/events/event}'
+want = {int(x) for x in sys.argv[2].split(',')}
+print('%-8s %-7s %-29s %-19s %-9s %-18s %-15s %-48s %s' % ('RecordID', 'EventID', 'TimeCreated (UTC, 100-ns)', 'FILETIME', 'Subject', 'LogonId', 'Target', 'TargetSid', 'MemberSid / Caller'))
+with evtx.Evtx(sys.argv[1]) as log:
+    for rec in log.records():
+        if rec.record_num() not in want:
+            continue
+        root = ET.fromstring(rec.xml())
+        shown = root.find(NS + 'System/' + NS + 'TimeCreated').get('SystemTime')
+        # raw FILETIME behind TimeCreated; python-evtx's own print stops at microseconds
+        ft = [s.unpack_qword(0) for s in rec.root().substitutions()
+              if isinstance(s, N.FiletimeTypeNode) and s.string() == shown][0]
+        sec, ticks = divmod(ft, 10**7)
+        utc = (datetime.datetime(1601, 1, 1) + datetime.timedelta(seconds=sec)).strftime('%Y-%m-%dT%H:%M:%S') + '.%07dZ' % ticks
+        d = {e.get('Name'): e.text for e in root.find(NS + 'EventData')}
+        print('%-8s %-7s %-29s %-19s %-9s %-18s %-15s %-48s %s' % (rec.record_num(), root.find(NS + 'System/' + NS + 'EventID').text, utc, ft,
+              d.get('SubjectUserName'), d.get('SubjectLogonId'), d.get('TargetUserName'), d.get('TargetSid'), d.get('MemberSid') or d.get('CallerProcessName') or '-'))
+
+$ python3 parse_security_records.py Security-2026-10-01.evtx 17470,17474,17475
+RecordID EventID TimeCreated (UTC, 100-ns)     FILETIME            Subject   LogonId            Target          TargetSid                                        MemberSid / Caller
+17470    4720    2026-08-12T18:38:06.1125157Z  134310334861125157  winadmin  0x00000000006b798a svc_update      S-1-5-21-2000000001-2000000002-2000000003-1006   -
+17474    4732    2026-08-12T18:38:06.1490793Z  134310334861490793  winadmin  0x00000000006b798a Users           S-1-5-32-545                                     S-1-5-21-2000000001-2000000002-2000000003-1006
+17475    4732    2026-08-12T18:38:12.6593834Z  134310334926593834  winadmin  0x00000000006b798a Administrators  S-1-5-32-544                                     S-1-5-21-2000000001-2000000002-2000000003-1006
+
+Computed from the FILETIME values: account creation (17470) to the Users addition (17474)
+0.0365636 s; to the Administrators addition (17475) 6.5468677 s.

@@ -1,0 +1,43 @@
+Containment of svc_update on DESKTOP-QLHBOB7, August 12, 2026
+Identifying values are replaced: the local administrator account (winadmin) and the
+machine SID's domain part (the RIDs -1006 and -513 are kept). Cited by incident-01
+Section 5.
+
+== Part 1: the containment records, parsed from the Security log ==
+Source and method as in security-log-4720-4732-2026-08-12.txt, Part 2, which lists
+parse_security_records.py in full: a copy of the client's Security log taken on October 1,
+2026 (not published), parsed October 2, 2026 with python-evtx 0.8.1; times are UTC from the
+raw FILETIME, seven fractional digits. The subject account and logon ID are the same as on
+the records of the account's creation.
+Event IDs: 4733 a member was removed from a security-enabled local group; 4798 a user's local
+group membership was enumerated; 4729 a member was removed from a security-enabled global
+group (None, RID 513, the account's primary group); 4726 a user account was deleted.
+No later record in the log names svc_update or its SID.
+
+$ shasum -a 256 Security-2026-10-01.evtx
+5fbc2617e20ed77f80b9b0e64c180234ab1bd2bc7208978fa8dbdbd068537d9e  Security-2026-10-01.evtx
+
+$ python3 parse_security_records.py Security-2026-10-01.evtx 17774,17775,17776,17777,17778
+RecordID EventID TimeCreated (UTC, 100-ns)     FILETIME            Subject   LogonId            Target          TargetSid                                        MemberSid / Caller
+17774    4733    2026-08-12T19:44:24.3380837Z  134310374643380837  winadmin  0x00000000006b798a Administrators  S-1-5-32-544                                     S-1-5-21-2000000001-2000000002-2000000003-1006
+17775    4798    2026-08-12T19:44:25.6847169Z  134310374656847169  winadmin  0x00000000006b798a svc_update      S-1-5-21-2000000001-2000000002-2000000003-1006   C:\Windows\System32\net1.exe
+17776    4733    2026-08-12T19:44:25.6857809Z  134310374656857809  winadmin  0x00000000006b798a Users           S-1-5-32-545                                     S-1-5-21-2000000001-2000000002-2000000003-1006
+17777    4729    2026-08-12T19:44:25.6862980Z  134310374656862980  winadmin  0x00000000006b798a None            S-1-5-21-2000000001-2000000002-2000000003-513    S-1-5-21-2000000001-2000000002-2000000003-1006
+17778    4726    2026-08-12T19:44:25.6867053Z  134310374656867053  winadmin  0x00000000006b798a svc_update      S-1-5-21-2000000001-2000000002-2000000003-1006   -
+
+== Part 2: terminal output pasted at the time ==
+The two containment commands and the follow-up query, as pasted at the time (copied from the
+session transcript; this output was not saved as a file). The prompt's profile path is replaced.
+
+PS C:\Users\winadmin> net localgroup Administrators svc_update /delete
+The command completed successfully.
+
+PS C:\Users\winadmin> net user svc_update /delete
+The command completed successfully.
+
+PS C:\Users\winadmin> net user svc_update
+The user name could not be found.
+
+More help is available by typing NET HELPMSG 2221.
+
+PS C:\Users\winadmin>

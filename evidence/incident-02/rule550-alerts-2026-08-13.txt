@@ -1,0 +1,37 @@
+Rule 550 (file integrity) alerts of August 13, 2026 on ubuntu-target
+Collected September 30, 2026 on the server, read-only, from the manager's archived alert file;
+command and output as pasted at the time. Identifying values are replaced: the
+account. Cited by incident-02 Section 3.
+Fields: alert time (UTC), firedtimes, path, event, scan mode, size before, size after,
+sha256_after, number of lines in the diff field, last 60 characters of the diff field.
+Thirteen sha256_after values are removed ("[sha256_after removed]"): several of those files are
+short enough that, with the published journal lines, diff screenshot and sizes, their hashes
+could be used to confirm the redacted account name. The two values kept describe the file after a truncation (106 bytes),
+a single session-close line with no account name.
+The incident alert is 20:35:14.737 (firedtimes 5; 26881 -> 106 bytes). firedtimes restarts at
+1 after the manager restart at 20:23 (journal-2026-08-13.txt). The alert at 20:05:24 records
+an earlier truncation of the same file (journal: truncate at 20:05:21).
+
+labadmin@ubuntu-target:~$  sudo grep '"id":"550"' /var/ossec/logs/alerts/2026/Aug/ossec-alerts-13.json | python3 -c '
+import sys, json
+for l in sys.stdin:
+    a = json.loads(l); s = a.get("syscheck", {}); d = s.get("diff", "")
+    print(a["timestamp"], a["rule"].get("firedtimes"), s.get("path"), s.get("event"), s.get("mode"), s.get("size_before"), s.get("size_after"), s.get("sha256_after"), len(d.splitlines()), repr(d[-60:]))
+' | tee ~/rule550-2026-08-13.txt
+[sudo: authenticate] Password:          
+2026-08-13T20:01:15.608+0000 1 /var/log/auth.log modified scheduled 564995 565556 [sha256_after removed] 6 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:05:24.922+0000 2 /var/log/auth.log modified scheduled 565556 106 1bb141dc51fad66b4cae7df3e3898b43b70e3a8811cf989f8d2d1f5b45a6e04d 335 "(retval = PAM_MAXTRIES(11), user = 'jsmith')\nMore changes..."
+2026-08-13T20:13:43.346+0000 3 /var/log/auth.log modified scheduled 106 529 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:16:49.276+0000 4 /var/log/auth.log modified scheduled 529 960 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:17:51.572+0000 5 /var/log/auth.log modified scheduled 960 23896 [sha256_after removed] 33 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:19:56.176+0000 6 /var/log/auth.log modified scheduled 23896 24317 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:23:03.107+0000 7 /var/log/auth.log modified scheduled 24317 24634 [sha256_after removed] 3 'ND=/usr/bin/nano /var/ossec/etc/local_internal_options.conf\n'
+2026-08-13T20:24:51.715+0000 1 /var/log/auth.log modified scheduled 25041 25584 [sha256_after removed] 6 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:29:00.911+0000 2 /var/log/auth.log modified scheduled 25584 26007 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:30:03.240+0000 3 /var/log/auth.log modified scheduled 26007 26459 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:31:05.536+0000 4 /var/log/auth.log modified scheduled 26459 26881 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:35:14.737+0000 5 /var/log/auth.log modified scheduled 26881 106 22b6cb84779362de9eeef7175f062cbe8a5b70c15737c876982093afa9356a77 64 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:37:19.490+0000 6 /var/log/auth.log modified scheduled 106 529 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:52:52.197+0000 7 /var/log/auth.log modified scheduled 529 952 [sha256_after removed] 4 ' sudo: pam_unix(sudo:session): session closed for user root\n'
+2026-08-13T20:53:54.481+0000 8 /var/log/auth.log modified scheduled 952 1252 [sha256_after removed] 3 'USER=root ; COMMAND=/usr/bin/nano /var/ossec/etc/ossec.conf\n'
+labadmin@ubuntu-target:~$

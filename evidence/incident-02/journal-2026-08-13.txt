@@ -1,0 +1,62 @@
+ubuntu-target system journal, August 13, 2026 (times UTC; the report's timeline uses EDT, UTC-4)
+Re-collected October 2, 2026 on the server, read-only. Identifying values are replaced: the
+account and home path. Cited by incident-02 Sections 3 and 8.
+
+== Part 1: wazuh-manager restarts, 19:00-20:45 ==
+Three restarts: 19:43, 20:00 and 20:23. Only systemd's own lines are shown; the manager's
+output between them is omitted, apart from the lines in Part 3.
+
+$ journalctl -u wazuh-manager --since "2026-08-13 19:00" --until "2026-08-13 20:45" --no-pager -o short-iso
+2026-08-13T19:43:24+00:00 ubuntu-target systemd[1]: Stopping wazuh-manager.service - Wazuh manager...
+2026-08-13T19:43:26+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Deactivated successfully.
+2026-08-13T19:43:26+00:00 ubuntu-target systemd[1]: Stopped wazuh-manager.service - Wazuh manager.
+2026-08-13T19:43:26+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Consumed 58.287s CPU time over 1h 6min 8.409s wall clock time, 464.8M memory peak.
+2026-08-13T19:43:26+00:00 ubuntu-target systemd[1]: Starting wazuh-manager.service - Wazuh manager...
+2026-08-13T19:43:33+00:00 ubuntu-target systemd[1]: Started wazuh-manager.service - Wazuh manager.
+2026-08-13T20:00:06+00:00 ubuntu-target systemd[1]: Stopping wazuh-manager.service - Wazuh manager...
+2026-08-13T20:00:07+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Deactivated successfully.
+2026-08-13T20:00:07+00:00 ubuntu-target systemd[1]: Stopped wazuh-manager.service - Wazuh manager.
+2026-08-13T20:00:07+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Consumed 32.220s CPU time over 16min 41.845s wall clock time, 481.7M memory peak.
+2026-08-13T20:00:07+00:00 ubuntu-target systemd[1]: Starting wazuh-manager.service - Wazuh manager...
+2026-08-13T20:00:15+00:00 ubuntu-target systemd[1]: Started wazuh-manager.service - Wazuh manager.
+2026-08-13T20:23:43+00:00 ubuntu-target systemd[1]: Stopping wazuh-manager.service - Wazuh manager...
+2026-08-13T20:23:44+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Deactivated successfully.
+2026-08-13T20:23:44+00:00 ubuntu-target systemd[1]: Stopped wazuh-manager.service - Wazuh manager.
+2026-08-13T20:23:44+00:00 ubuntu-target systemd[1]: wazuh-manager.service: Consumed 1min 2.479s CPU time over 23min 36.383s wall clock time, 453.9M memory peak.
+2026-08-13T20:23:44+00:00 ubuntu-target systemd[1]: Starting wazuh-manager.service - Wazuh manager...
+2026-08-13T20:23:52+00:00 ubuntu-target systemd[1]: Started wazuh-manager.service - Wazuh manager.
+
+== Part 2: sudo commands, 20:00-20:36 ==
+Includes the first truncation (20:05:21), the edit of local_internal_options.conf (20:22:44),
+the restart at 20:23:43 and the repeat truncation (20:34:39). One line is omitted and marked.
+
+$ sudo journalctl _COMM=sudo --since "2026-08-13 20:00:00" --until "2026-08-13 20:36:00" --no-pager -o short-iso-precise | grep COMMAND=
+2026-08-13T20:00:06.669575+00:00 ubuntu-target sudo[16557]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/systemctl restart wazuh-manager
+2026-08-13T20:00:40.849512+00:00 ubuntu-target sudo[18581]: labadmin :  PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/tee -a /var/log/auth.log
+2026-08-13T20:05:21.757991+00:00 ubuntu-target sudo[18985]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/truncate -s 0 /var/log/auth.log
+2026-08-13T20:13:33.380096+00:00 ubuntu-target sudo[19085]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -A2 scan started /var/ossec/logs/ossec.log
+2026-08-13T20:16:45.865356+00:00 ubuntu-target sudo[19133]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -B5 -A20 id=\"550\" /var/ossec/ruleset/rules/*.xml
+2026-08-13T20:17:25.146731+00:00 ubuntu-target sudo[19156]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/find /var/ossec -iname *.xml
+2026-08-13T20:17:25.356997+00:00 ubuntu-target sudo[19161]: labadmin :  PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -l id=\"550\" /var/ossec/framework/python/lib/python3.10/test/xmltestdata/test.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/simple-ns.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/simple.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inC14N1_c14nComment.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inC14N3_c14nTrim.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inNsContent_c14nPrefixQnameXpathElem.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/c14nQnameElem.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/out_inNsDefault_c14nPrefix.xml /var/ossec/framework/python/lib/python3.10/test/xmltestdata/c14n-20/c14nTrim.xml [...]
+2026-08-13T20:17:46.113323+00:00 ubuntu-target sudo[19174]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -B5 -A20 id=\"550\" /var/ossec/ruleset/rules/0015-ossec_rules.xml
+2026-08-13T20:18:57.127178+00:00 ubuntu-target sudo[19199]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -iE error|warn /var/ossec/logs/ossec.log
+2026-08-13T20:22:44.370740+00:00 ubuntu-target sudo[19232]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/nano /var/ossec/etc/local_internal_options.conf
+2026-08-13T20:23:43.062944+00:00 ubuntu-target sudo[19247]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/systemctl restart wazuh-manager
+2026-08-13T20:23:57.131612+00:00 ubuntu-target sudo[20712]: labadmin :  PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/tee -a /var/log/auth.log
+2026-08-13T20:28:05.682790+00:00 ubuntu-target sudo[21664]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -A5 -B5 auth.log /var/ossec/logs/ossec.log
+[one line omitted]
+2026-08-13T20:30:08.011524+00:00 ubuntu-target sudo[21722]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -A40 1786652691 /var/ossec/logs/ossec.log
+2026-08-13T20:34:39.934036+00:00 ubuntu-target sudo[21756]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/truncate -s 0 /var/log/auth.log
+
+== Part 3: wazuh-syscheckd at the 20:23 restart (output of the Part 1 command) ==
+".swp$" is the only ignore pattern read from ossec.conf; the same four lines appear twice,
+from two syscheckd processes (20:23:44 and 20:23:48).
+
+2026-08-13T20:23:44+00:00 ubuntu-target env[19379]: 2026/08/13 20:23:44 wazuh-syscheckd[19379] config.c:33 at Read_Syscheck_Config(): DEBUG: (6287): Reading configuration file: 'etc/ossec.conf'
+2026-08-13T20:23:44+00:00 ubuntu-target env[19379]: 2026/08/13 20:23:44 wazuh-syscheckd[19379] syscheck-config.c:2568 at process_option_regex(): DEBUG: Found ignore regex node .swp$
+2026-08-13T20:23:44+00:00 ubuntu-target env[19379]: 2026/08/13 20:23:44 wazuh-syscheckd[19379] syscheck-config.c:2575 at process_option_regex(): DEBUG: Found ignore regex node .swp$ OK?
+2026-08-13T20:23:44+00:00 ubuntu-target env[19379]: 2026/08/13 20:23:44 wazuh-syscheckd[19379] syscheck-config.c:2576 at process_option_regex(): DEBUG: Found ignore regex size 0
+2026-08-13T20:23:48+00:00 ubuntu-target env[19566]: 2026/08/13 20:23:48 wazuh-syscheckd[19566] config.c:33 at Read_Syscheck_Config(): DEBUG: (6287): Reading configuration file: 'etc/ossec.conf'
+2026-08-13T20:23:48+00:00 ubuntu-target env[19566]: 2026/08/13 20:23:48 wazuh-syscheckd[19566] syscheck-config.c:2568 at process_option_regex(): DEBUG: Found ignore regex node .swp$
+2026-08-13T20:23:48+00:00 ubuntu-target env[19566]: 2026/08/13 20:23:48 wazuh-syscheckd[19566] syscheck-config.c:2575 at process_option_regex(): DEBUG: Found ignore regex node .swp$ OK?
+2026-08-13T20:23:48+00:00 ubuntu-target env[19566]: 2026/08/13 20:23:48 wazuh-syscheckd[19566] syscheck-config.c:2576 at process_option_regex(): DEBUG: Found ignore regex size 0

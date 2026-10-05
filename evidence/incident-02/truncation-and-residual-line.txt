@@ -1,0 +1,45 @@
+The truncating sudo session and the line it left in auth.log (August 13, 2026)
+Re-collected October 2, 2026 on ubuntu-target, read-only. Identifying values are replaced: the
+account and home path. Cited by incident-02
+Sections 2 and 3.
+
+== Part 1: the sudo session that ran the truncation (system journal, UTC) ==
+
+$ sudo journalctl _COMM=sudo --since "2026-08-13 20:34:30" --until "2026-08-13 20:34:45" --no-pager -o short-iso-precise
+2026-08-13T20:34:39.933860+00:00 ubuntu-target sudo[21756]: pam_unix(sudo:session): session opened for user root(uid=0) by labadmin(uid=1000)
+2026-08-13T20:34:39.934036+00:00 ubuntu-target sudo[21756]: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/truncate -s 0 /var/log/auth.log
+2026-08-13T20:34:39.941536+00:00 ubuntu-target sudo[21756]: pam_unix(sudo:session): session closed for user root
+
+== Part 2: the incident alert's diff field and recorded modification times ==
+Read from the manager's archived alert file by the re-collection script; the part of the
+script that printed this block is shown. The single new line, the whole content of auth.log
+after the truncation, is the closing line of the truncating sudo session (20:34:39.941536 in
+the journal, 20:34:39.941618 in auth.log). mtime_before and mtime_after are the file's
+modification times recorded in the alert.
+
+$ sudo python3 /tmp/hl01_alerts.py
+(excerpt of /tmp/hl01_alerts.py)
+import json, sys
+def rd(p):
+    with open(p, errors="replace") as f:
+        for l in f:
+            try: yield json.loads(l)
+            except Exception: pass
+A = "/var/ossec/logs/alerts/2026/"
+...
+print("\n## Aug 13 incident alert diff: last 4 old lines and all new lines")
+for a in rd(A + "Aug/ossec-alerts-13.json"):
+    if a["timestamp"].startswith("2026-08-13T20:35:14") and a["rule"]["id"] == "550":
+        L = a["syscheck"]["diff"].splitlines()
+        old = [x for x in L if x.startswith("< ")]; new = [x for x in L if x.startswith("> ")]
+        print("\n".join(old[-4:])); print("---"); print("\n".join(new))
+        print("mtime_before", a["syscheck"].get("mtime_before"), "mtime_after", a["syscheck"].get("mtime_after"))
+
+## Aug 13 incident alert diff: last 4 old lines and all new lines
+< 2026-08-13T20:29:29.510770+00:00 ubuntu-target sudo: pam_unix(sudo:session): session closed for user root
+< 2026-08-13T20:30:08.011976+00:00 ubuntu-target sudo: pam_unix(sudo:session): session opened for user root(uid=0) by labadmin(uid=1000)
+< 2026-08-13T20:30:08.012440+00:00 ubuntu-target sudo: labadmin : TTY=/dev/pts/0 ; PWD=/home/labadmin ; USER=root ; COMMAND=/usr/bin/grep -A40 1786652691 /var/ossec/logs/ossec.log
+< 2026-08-13T20:30:08.020632+00:00 ubuntu-target sudo: pam_unix(sudo:session): session closed for user root
+---
+> 2026-08-13T20:34:39.941618+00:00 ubuntu-target sudo: pam_unix(sudo:session): session closed for user root
+mtime_before 2026-08-13T20:30:08 mtime_after 2026-08-13T20:34:39
